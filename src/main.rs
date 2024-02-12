@@ -2,7 +2,7 @@ mod event;
 mod req;
 
 use crate::{
-    event::UnsignedEvent,
+    event::{EventKind, UnsignedEvent},
     req::{Filter, Req},
 };
 use dotenvy;
@@ -34,7 +34,7 @@ async fn main() {
         })
     };
 
-    let pubkey = "be54d42e1c629a90d6644967f4cb8d86ef14b837a7ae8bc97f0ab3eded25d534";
+    let pubkey = "be54d42e1c629a90d6644967f4cb8d86ef14b837a7ae8bc97f0ab3eded25d534".to_string();
     let seckey = std::env::var("SECKEY").unwrap();
 
     let req = Req {
@@ -43,7 +43,12 @@ async fn main() {
             .kinds(vec![1])
             .authors(vec![pubkey.to_string()]),
     };
-    let event = UnsignedEvent::new(pubkey.to_string(), 1, Vec::new(), "test".to_string());
+    let event = UnsignedEvent::new(
+        pubkey.to_string(),
+        EventKind::TextNote,
+        Vec::new(),
+        "testtesttest".to_string(),
+    );
     let event = event.sign(&seckey);
     write.send(req.serialize().unwrap().into()).await.unwrap();
     write.send(event.serialize().unwrap().into()).await.unwrap();

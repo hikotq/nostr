@@ -15,7 +15,7 @@ pub struct UnsignedEvent {
     // UNIXタイムスタンプ（秒単位）
     created_at: u64,
     // イベントの種類
-    kind: i32,
+    kind: EventKind,
     // タグ
     tags: Vec<Vec<String>>,
     // 任意の文字列
@@ -23,7 +23,7 @@ pub struct UnsignedEvent {
 }
 
 impl UnsignedEvent {
-    pub fn new(pubkey: String, kind: i32, tags: Vec<Vec<String>>, content: String) -> Self {
+    pub fn new(pubkey: String, kind: EventKind, tags: Vec<Vec<String>>, content: String) -> Self {
         // シリアライズしたイベントからハッシュ値(id)を計算
         let created_at = SystemTime::now()
             .duration_since(UNIX_EPOCH)
@@ -33,7 +33,7 @@ impl UnsignedEvent {
             r#"[0,"{}",{},{},{},"{}"]"#,
             pubkey,
             created_at,
-            kind,
+            u64::from(kind),
             serde_json::to_string(&tags).unwrap(),
             content
         );
@@ -82,7 +82,7 @@ pub struct Event {
     // UNIXタイムスタンプ（秒単位）
     created_at: u64,
     // イベントの種類
-    kind: i32,
+    kind: EventKind,
     // タグ
     tags: Vec<Vec<String>>,
     // 任意の文字列
@@ -95,5 +95,49 @@ impl Event {
     pub fn serialize(&self) -> Result<String, Box<dyn Error>> {
         let serialized: String = serde_json::to_string(&self)?;
         Ok(serialized)
+    }
+}
+
+#[derive(Debug, Copy, Clone)]
+pub enum EventKind {
+    MetaData,
+    TextNote,
+}
+
+impl From<EventKind> for u64 {
+    fn from(kind: EventKind) -> u64 {
+        match kind {
+            EventKind::MetaData => 0,
+            EventKind::TextNote => 1,
+        }
+    }
+}
+
+impl From<u64> for EventKind {
+    fn from(kind: u64) -> EventKind {
+        match kind {
+            0 => EventKind::MetaData,
+            1 => EventKind::TextNote,
+            _ => panic!("unknown event kind"),
+        }
+    }
+}
+
+impl Serialize for EventKind {
+    fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
+    where
+        S: serde::Serializer,
+    {
+        serializer.serialize_u64((*self).into())
+    }
+}
+
+impl<'de> Deserialize<'de> for EventKind {
+    fn deserialize<D>(deserializer: D) -> Result<EventKind, D::Error>
+    where
+        D: serde::Deserializer<'de>,
+    {
+        let kind = u64::deserialize(deserializer)?;
+        Ok(kind.into())
     }
 }
