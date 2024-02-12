@@ -1,13 +1,21 @@
+mod event;
 mod req;
 
-use crate::req::{Filter, Req};
-use futures_util::{pin_mut, SinkExt, StreamExt};
+use crate::{
+    event::UnsignedEvent,
+    req::{Filter, Req},
+};
+use dotenvy;
+use futures_util::{SinkExt, StreamExt};
 use std::env;
 use tokio::io::AsyncWriteExt;
 use tokio_tungstenite::connect_async;
 
 #[tokio::main]
 async fn main() {
+    // dotenv 読み込み
+    dotenvy::from_filename(".env").unwrap();
+
     let connect_addr = env::args()
         .nth(1)
         .unwrap_or_else(|| panic!("this program requires at least one argument"));
@@ -26,11 +34,18 @@ async fn main() {
         })
     };
 
+    let pubkey = "be54d42e1c629a90d6644967f4cb8d86ef14b837a7ae8bc97f0ab3eded25d534";
+    let seckey = std::env::var("SECKEY").unwrap();
+
     let req = Req {
         id: "testtesttesttesttest".to_string(),
-        filter: Filter::new().kinds(vec![1]),
+        filter: Filter::new()
+            .kinds(vec![1])
+            .authors(vec![pubkey.to_string()]),
     };
-    write.send(req.serialize().into()).await.unwrap();
-
+    let event = UnsignedEvent::new(pubkey.to_string(), 1, Vec::new(), "test".to_string());
+    let event = event.sign(&seckey);
+    write.send(req.serialize().unwrap().into()).await.unwrap();
+    write.send(event.serialize().unwrap().into()).await.unwrap();
     ws_to_stdout.await;
 }

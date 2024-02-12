@@ -7,13 +7,14 @@ pub struct Req {
 }
 
 impl Req {
-    pub fn serialize(&self) -> String {
-        format!(
+    pub fn serialize(&self) -> Result<String, Box<dyn std::error::Error>> {
+        let serialized = format!(
             r#"["REQ","{}",{}]"#,
             self.id,
-            serde_json::to_string(&self.filter).unwrap()
+            serde_json::to_string(&self.filter)?
         )
-        .to_string()
+        .to_string();
+        Ok(serialized)
     }
 }
 
