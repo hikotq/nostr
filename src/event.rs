@@ -2,10 +2,7 @@ use hex;
 use libsecp256k1::{sign, Message, SecretKey};
 use serde::{Deserialize, Serialize};
 use sha2::{Digest, Sha256};
-use std::{
-    error::Error,
-    time::{SystemTime, UNIX_EPOCH},
-};
+use std::time::{SystemTime, UNIX_EPOCH};
 
 pub struct UnsignedEvent {
     // SHA-256 (32バイト) を小文字の16進数で表記
@@ -89,13 +86,6 @@ pub struct Event {
     content: String,
     // 署名 (64バイトの16進数)
     sig: String,
-}
-
-impl Event {
-    pub fn serialize(&self) -> Result<String, Box<dyn Error>> {
-        let serialized: String = serde_json::to_string(&self)?;
-        Ok(serialized)
-    }
 }
 
 #[derive(Debug, Copy, Clone)]

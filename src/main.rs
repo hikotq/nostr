@@ -50,7 +50,13 @@ async fn main() {
         "testtesttest".to_string(),
     );
     let event = event.sign(&seckey);
-    write.send(req.serialize().unwrap().into()).await.unwrap();
-    write.send(event.serialize().unwrap().into()).await.unwrap();
+    write
+        .send(serde_json::to_string(&req).unwrap().into())
+        .await
+        .unwrap();
+    write
+        .send(serde_json::to_string(&event).unwrap().into())
+        .await
+        .unwrap();
     ws_to_stdout.await;
 }
