@@ -1,64 +1,9 @@
-use std::fmt;
-
-use serde::{
-    de::{self, SeqAccess, Visitor},
-    ser::SerializeSeq,
-    Deserialize, Serialize, Serializer,
-};
+use serde::{Deserialize, Serialize};
 
 #[derive(Debug, Eq, PartialEq)]
 pub struct Req {
     pub id: String,
     pub filter: Filter,
-}
-
-impl Serialize for Req {
-    fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
-    where
-        S: Serializer,
-    {
-        let mut seq = serializer.serialize_seq(Some(3))?;
-        seq.serialize_element("REQ")?;
-        seq.serialize_element(self.id.as_str())?;
-        seq.serialize_element(&self.filter)?;
-        seq.end()
-    }
-}
-
-impl<'de> Deserialize<'de> for Req {
-    fn deserialize<D>(deserializer: D) -> Result<Self, D::Error>
-    where
-        D: serde::Deserializer<'de>,
-    {
-        struct ReqVisitor;
-
-        impl<'de> Visitor<'de> for ReqVisitor {
-            type Value = Req;
-
-            fn expecting(&self, formatter: &mut fmt::Formatter) -> fmt::Result {
-                formatter.write_str("a sequence of three elements")
-            }
-
-            fn visit_seq<V>(self, mut seq: V) -> Result<Req, V::Error>
-            where
-                V: SeqAccess<'de>,
-            {
-                let _ = seq
-                    .next_element::<&str>()?
-                    .ok_or_else(|| de::Error::invalid_length(0, &self))?;
-                let id = seq
-                    .next_element::<String>()?
-                    .ok_or_else(|| de::Error::invalid_length(1, &self))?;
-                let filter = seq
-                    .next_element::<Filter>()?
-                    .ok_or_else(|| de::Error::invalid_length(2, &self))?;
-
-                Ok(Req { id, filter })
-            }
-        }
-        // deserializer に ReqVisitor を使用して、Req 構造体をデシリアライズします。
-        deserializer.deserialize_seq(ReqVisitor)
-    }
 }
 
 #[derive(Debug, Serialize, Deserialize, Eq, PartialEq)]
