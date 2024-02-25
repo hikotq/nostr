@@ -1,13 +1,18 @@
 mod event;
+mod message;
 mod req;
 
 use crate::{
     event::{EventKind, UnsignedEvent},
+    message::ClientMessage,
     req::{Filter, Req},
 };
 use dotenvy;
 use futures_util::{SinkExt, StreamExt};
-use std::env;
+use std::{
+    env,
+    time::{SystemTime, UNIX_EPOCH},
+};
 use tokio::io::AsyncWriteExt;
 use tokio_tungstenite::connect_async;
 
@@ -43,19 +48,33 @@ async fn main() {
             .kinds(vec![1])
             .authors(vec![pubkey.to_string()]),
     };
+
+    let created_at = SystemTime::now()
+        .duration_since(UNIX_EPOCH)
+        .unwrap()
+        .as_secs();
     let event = UnsignedEvent::new(
         pubkey.to_string(),
         EventKind::TextNote,
         Vec::new(),
         "testtesttest".to_string(),
+        created_at,
     );
     let event = event.sign(&seckey);
     write
-        .send(serde_json::to_string(&req).unwrap().into())
+        .send(
+            serde_json::to_string(&ClientMessage::from(req))
+                .unwrap()
+                .into(),
+        )
         .await
         .unwrap();
     write
-        .send(serde_json::to_string(&event).unwrap().into())
+        .send(
+            serde_json::to_string(&ClientMessage::from(event))
+                .unwrap()
+                .into(),
+        )
         .await
         .unwrap();
     ws_to_stdout.await;

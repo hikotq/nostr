@@ -8,6 +8,7 @@ edition = "2021"
 [dependencies]
 axum = { version = "0.7.4", features = ["ws"] }
 axum-extra = { version = "0.9.2", features = ["typed-header"] }
+bech32 = "0.11.0"
 dotenvy = "0.15.7"
 futures = "0.3.30"
 futures-channel = "0.3.30"

@@ -20,12 +20,14 @@ pub struct UnsignedEvent {
 }
 
 impl UnsignedEvent {
-    pub fn new(pubkey: String, kind: EventKind, tags: Vec<Vec<String>>, content: String) -> Self {
+    pub fn new(
+        pubkey: String,
+        kind: EventKind,
+        tags: Vec<Vec<String>>,
+        content: String,
+        created_at: u64,
+    ) -> Self {
         // シリアライズしたイベントからハッシュ値(id)を計算
-        let created_at = SystemTime::now()
-            .duration_since(UNIX_EPOCH)
-            .unwrap()
-            .as_secs();
         let serialized_event = format!(
             r#"[0,"{}",{},{},{},"{}"]"#,
             pubkey,
@@ -70,7 +72,7 @@ impl UnsignedEvent {
     }
 }
 
-#[derive(Serialize, Deserialize, Debug)]
+#[derive(Serialize, Deserialize, Debug, Eq, PartialEq)]
 pub struct Event {
     // SHA-256 (32バイト) を小文字の16進数で表記
     id: String,
@@ -88,7 +90,7 @@ pub struct Event {
     sig: String,
 }
 
-#[derive(Debug, Copy, Clone)]
+#[derive(Debug, Copy, Clone, Eq, PartialEq)]
 pub enum EventKind {
     MetaData,
     TextNote,

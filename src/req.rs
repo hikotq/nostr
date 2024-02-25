@@ -145,38 +145,3 @@ impl Filter {
         self
     }
 }
-
-#[cfg(test)]
-mod tests {
-    use super::Req;
-
-    fn data_provider<'a>() -> (Req, &'a str) {
-        let req = super::Req {
-            id: "id".to_string(),
-            filter: super::Filter::new()
-                .ids(vec!["id".to_string()])
-                .authors(vec!["pubkey".to_string()])
-                .kinds(vec![1])
-                .e_tags(vec!["e_tag".to_string()])
-                .p_tags(vec!["p_tag".to_string()])
-                .since(1708203194)
-                .until(1708203194)
-                .limit(10),
-        };
-        let serialized = r##"["REQ","id",{"ids":["id"],"authors":["pubkey"],"kinds":[1],"#e":["e_tag"],"#p":["p_tag"],"since":1708203194,"until":1708203194,"limit":10}]"##;
-        (req, serialized)
-    }
-
-    #[test]
-    fn serialize() {
-        let (req, expected) = data_provider();
-        assert_eq!(serde_json::to_string(&req).unwrap(), expected,);
-    }
-
-    #[test]
-    fn deserialize() {
-        let (expected, serialized) = data_provider();
-        let req: Req = serde_json::from_str(&serialized).unwrap();
-        assert_eq!(req, expected);
-    }
-}
