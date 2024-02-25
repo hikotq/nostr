@@ -7,7 +7,7 @@ use serde::{
 };
 
 use crate::{
-    event::{Event, EventKind},
+    event::Event,
     req::{Filter, Req},
 };
 
@@ -152,16 +152,13 @@ impl From<Event> for ClientMessage {
 
 #[cfg(test)]
 mod tests {
-    use std::{
-        time::{SystemTime, UNIX_EPOCH},
-        vec,
-    };
+    use std::vec;
 
-    use bech32::{decode, encode, Hrp};
+    use bech32::decode;
 
-    use crate::event::{Event, UnsignedEvent};
+    use crate::event::{EventKind, UnsignedEvent};
 
-    use super::{ClientMessage, Req};
+    use super::ClientMessage;
 
     const TEST_PUBKEY: &str = "npub1test2s5u9l0z8dakmap5s6ddw8fvjsp6820h52nzjc35j8j8wv6qcnjx5q";
     const TEST_SECKEY: &str = "nsec1kj0mc49wzr2lqjka0m06ft0ku8n4zntgk6yh78vuvqdw7mnctk6q3uh0fr";
@@ -204,7 +201,7 @@ mod tests {
         let seckey = hex::encode(seckey);
         let event = UnsignedEvent::new(
             pubkey.clone(),
-            super::EventKind::TextNote,
+            EventKind::TextNote,
             vec![vec!["tag".to_string()]],
             "content".to_string(),
             created_at,

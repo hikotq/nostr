@@ -2,7 +2,6 @@ use hex;
 use libsecp256k1::{sign, Message, SecretKey};
 use serde::{Deserialize, Serialize};
 use sha2::{Digest, Sha256};
-use std::time::{SystemTime, UNIX_EPOCH};
 
 pub struct UnsignedEvent {
     // SHA-256 (32バイト) を小文字の16進数で表記
