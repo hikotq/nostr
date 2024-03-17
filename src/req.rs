@@ -10,28 +10,28 @@ pub struct Req {
 pub struct Filter {
     // イベントのID、もしくは先頭部分（プレフィクス）のリスト
     #[serde(skip_serializing_if = "Option::is_none")]
-    ids: Option<Vec<String>>,
+    pub ids: Option<Vec<String>>,
     // 公開鍵、もしくは先頭部分のリスト
     #[serde(skip_serializing_if = "Option::is_none")]
-    authors: Option<Vec<String>>,
+    pub authors: Option<Vec<String>>,
     // イベントの種類の数字のリスト
     #[serde(skip_serializing_if = "Option::is_none")]
-    kinds: Option<Vec<u32>>,
+    pub kinds: Option<Vec<u16>>,
     // "e"タグで参照されたイベントIDのリスト
     #[serde(rename = "#e", skip_serializing_if = "Option::is_none")]
-    e_tags: Option<Vec<String>>,
+    pub e_tags: Option<Vec<String>>,
     // "p"タグで参照された公開鍵のリスト
     #[serde(rename = "#p", skip_serializing_if = "Option::is_none")]
-    p_tags: Option<Vec<String>>,
+    pub p_tags: Option<Vec<String>>,
     // UNIXタイムスタンプ（秒単位の整数値）。パスするには、イベントはこれより新しくなければならない
     #[serde(skip_serializing_if = "Option::is_none")]
-    since: Option<i64>,
+    pub since: Option<i64>,
     // UNIXタイムスタンプ（秒単位の整数値）。パスするには、イベントはこれより古くなければならない
     #[serde(skip_serializing_if = "Option::is_none")]
-    until: Option<i64>,
+    pub until: Option<i64>,
     // 初回の問い合わせで返されるイベントの個数の上限
     #[serde(skip_serializing_if = "Option::is_none")]
-    limit: Option<usize>,
+    pub limit: Option<usize>,
 }
 
 impl Filter {
@@ -60,7 +60,7 @@ impl Filter {
         self
     }
 
-    pub fn kinds(mut self, kinds: Vec<u32>) -> Self {
+    pub fn kinds(mut self, kinds: Vec<u16>) -> Self {
         self.kinds = Some(kinds);
         self
     }

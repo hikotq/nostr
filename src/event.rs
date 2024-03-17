@@ -9,7 +9,7 @@ pub struct UnsignedEvent {
     // 公開鍵 (32バイト) を小文字の16進数で表記
     pubkey: String,
     // UNIXタイムスタンプ（秒単位）
-    created_at: u64,
+    created_at: i64,
     // イベントの種類
     kind: EventKind,
     // タグ
@@ -24,14 +24,14 @@ impl UnsignedEvent {
         kind: EventKind,
         tags: Vec<Vec<String>>,
         content: String,
-        created_at: u64,
+        created_at: i64,
     ) -> Self {
         // シリアライズしたイベントからハッシュ値(id)を計算
         let serialized_event = format!(
             r#"[0,"{}",{},{},{},"{}"]"#,
             pubkey,
             created_at,
-            u64::from(kind),
+            u16::from(kind),
             serde_json::to_string(&tags).unwrap(),
             content
         );
@@ -74,19 +74,19 @@ impl UnsignedEvent {
 #[derive(Serialize, Deserialize, Debug, Eq, PartialEq)]
 pub struct Event {
     // SHA-256 (32バイト) を小文字の16進数で表記
-    id: String,
+    pub id: String,
     // 公開鍵 (32バイト) を小文字の16進数で表記
-    pubkey: String,
+    pub pubkey: String,
     // UNIXタイムスタンプ（秒単位）
-    created_at: u64,
+    pub created_at: i64,
     // イベントの種類
-    kind: EventKind,
+    pub kind: EventKind,
     // タグ
-    tags: Vec<Vec<String>>,
+    pub tags: Vec<Vec<String>>,
     // 任意の文字列
-    content: String,
+    pub content: String,
     // 署名 (64バイトの16進数)
-    sig: String,
+    pub sig: String,
 }
 
 #[derive(Debug, Copy, Clone, Eq, PartialEq)]
@@ -95,8 +95,8 @@ pub enum EventKind {
     TextNote,
 }
 
-impl From<EventKind> for u64 {
-    fn from(kind: EventKind) -> u64 {
+impl From<EventKind> for u16 {
+    fn from(kind: EventKind) -> u16 {
         match kind {
             EventKind::MetaData => 0,
             EventKind::TextNote => 1,
@@ -104,8 +104,8 @@ impl From<EventKind> for u64 {
     }
 }
 
-impl From<u64> for EventKind {
-    fn from(kind: u64) -> EventKind {
+impl From<u16> for EventKind {
+    fn from(kind: u16) -> EventKind {
         match kind {
             0 => EventKind::MetaData,
             1 => EventKind::TextNote,
@@ -119,7 +119,7 @@ impl Serialize for EventKind {
     where
         S: serde::Serializer,
     {
-        serializer.serialize_u64((*self).into())
+        serializer.serialize_u16((*self).into())
     }
 }
 
@@ -128,7 +128,7 @@ impl<'de> Deserialize<'de> for EventKind {
     where
         D: serde::Deserializer<'de>,
     {
-        let kind = u64::deserialize(deserializer)?;
+        let kind = u16::deserialize(deserializer)?;
         Ok(kind.into())
     }
 }
