@@ -3,7 +3,7 @@ use serde::{Deserialize, Serialize};
 #[derive(Debug, Eq, PartialEq)]
 pub struct Req {
     pub id: String,
-    pub filter: Filter,
+    pub filter: Vec<Filter>,
 }
 
 #[derive(Debug, Serialize, Deserialize, Eq, PartialEq)]

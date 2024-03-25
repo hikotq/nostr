@@ -215,8 +215,11 @@ async fn process_event_message(
     {
         // サブスクライバーにイベントを送信
         // ここで、イベントがフィルタに合致するかどうかをチェックする
-        if match_event(&event, &s.filter) {
-            let _ = message_sender.send(Message::Text(serde_json::to_string(&event).unwrap()));
+        for filter in &s.filter {
+            if match_event(&event, &filter) {
+                let _ = message_sender.send(Message::Text(serde_json::to_string(&event).unwrap()));
+                break;
+            }
         }
     }
     Ok(())

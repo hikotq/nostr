@@ -3,6 +3,7 @@ use libsecp256k1::{sign, Message, SecretKey};
 use serde::{Deserialize, Serialize};
 use sha2::{Digest, Sha256};
 
+#[allow(dead_code)]
 pub struct UnsignedEvent {
     // SHA-256 (32バイト) を小文字の16進数で表記
     id: String,
@@ -19,6 +20,7 @@ pub struct UnsignedEvent {
 }
 
 impl UnsignedEvent {
+    #[allow(dead_code)]
     pub fn new(
         pubkey: String,
         kind: EventKind,
@@ -51,6 +53,7 @@ impl UnsignedEvent {
         }
     }
 
+    #[allow(dead_code)]
     pub fn sign(self, seckey: &str) -> Event {
         // 計算したidと秘密鍵を使って署名を作成
         let key = SecretKey::parse_slice(&hex::decode(seckey).unwrap()).unwrap();

@@ -35,10 +35,14 @@ fn serialize_req<S>(req: &Req, serializer: S) -> Result<S::Ok, S::Error>
 where
     S: serde::Serializer,
 {
-    let mut seq = serializer.serialize_seq(Some(3))?;
+    let length = 2 + req.filter.len();
+    let mut seq = serializer.serialize_seq(Some(length))?;
     seq.serialize_element("REQ")?;
     seq.serialize_element(req.id.as_str())?;
-    seq.serialize_element(&req.filter)?;
+    for filter in &req.filter {
+        seq.serialize_element(filter)?;
+    }
+
     seq.end()
 }
 
@@ -106,10 +110,14 @@ where
     let id = seq
         .next_element::<String>()?
         .ok_or_else(|| de::Error::invalid_length(1, visitor))?;
-    let filter = seq
-        .next_element::<Filter>()?
-        .ok_or_else(|| de::Error::invalid_length(2, visitor))?;
-    Ok(ClientMessage::Req(Req { id, filter }))
+    let mut filters = Vec::new();
+    while let Some(filter) = seq.next_element::<Filter>()? {
+        filters.push(filter);
+    }
+    Ok(ClientMessage::Req(Req {
+        id,
+        filter: filters,
+    }))
 }
 
 fn deserialize_event<'de, 'a, V>(
@@ -373,7 +381,7 @@ where
 #[cfg(test)]
 mod tests {
 
-    use crate::message::Event;
+    use crate::{message::Event, req::Filter};
     use bech32::decode;
 
     use crate::event::{EventKind, UnsignedEvent};
@@ -384,19 +392,29 @@ mod tests {
     const TEST_SECKEY: &str = "nsec1kj0mc49wzr2lqjka0m06ft0ku8n4zntgk6yh78vuvqdw7mnctk6q3uh0fr";
 
     fn data_provider_req<'a>() -> (ClientMessage, &'a str) {
+        let filter1 = Filter::new()
+            .ids(vec!["id1".to_string()])
+            .authors(vec!["pubkey1".to_string()])
+            .kinds(vec![1])
+            .e_tags(vec!["e_tag1".to_string()])
+            .p_tags(vec!["p_tag1".to_string()])
+            .since(1708203194)
+            .until(1708203194)
+            .limit(10);
+        let filter2 = Filter::new()
+            .ids(vec!["id2".to_string()])
+            .authors(vec!["pubkey2".to_string()])
+            .kinds(vec![2])
+            .e_tags(vec!["e_tag2".to_string()])
+            .p_tags(vec!["p_tag2".to_string()])
+            .since(1708203194)
+            .until(1708203194)
+            .limit(10);
         let req = super::Req {
             id: "id".to_string(),
-            filter: super::Filter::new()
-                .ids(vec!["id".to_string()])
-                .authors(vec!["pubkey".to_string()])
-                .kinds(vec![1])
-                .e_tags(vec!["e_tag".to_string()])
-                .p_tags(vec!["p_tag".to_string()])
-                .since(1708203194)
-                .until(1708203194)
-                .limit(10),
+            filter: vec![filter1, filter2],
         };
-        let serialized = r##"["REQ","id",{"ids":["id"],"authors":["pubkey"],"kinds":[1],"#e":["e_tag"],"#p":["p_tag"],"since":1708203194,"until":1708203194,"limit":10}]"##;
+        let serialized = r##"["REQ","id",{"ids":["id1"],"authors":["pubkey1"],"kinds":[1],"#e":["e_tag1"],"#p":["p_tag1"],"since":1708203194,"until":1708203194,"limit":10},{"ids":["id2"],"authors":["pubkey2"],"kinds":[2],"#e":["e_tag2"],"#p":["p_tag2"],"since":1708203194,"until":1708203194,"limit":10}]"##;
         (req.into(), serialized)
     }
 

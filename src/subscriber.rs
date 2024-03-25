@@ -7,5 +7,5 @@ pub struct Subscriber {
     pub client: String,
     pub sender: UnboundedSender<Message>,
     pub id: String,
-    pub filter: Filter,
+    pub filter: Vec<Filter>,
 }
